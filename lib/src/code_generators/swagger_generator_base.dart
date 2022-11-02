@@ -41,7 +41,7 @@ abstract class SwaggerGeneratorBase {
             .map((String str) => str.capitalize)
             .join())
         .join('\$')
-        .replaceFirst(RegExp(options.cutFromModelNames), '');
+        .replaceAll(RegExp(options.cutFromModelNames), '');
 
     if (kKeyClasses.contains(result)) {
       return '$result\$';
@@ -55,7 +55,7 @@ abstract class SwaggerGeneratorBase {
       return '\$$result';
     }
 
-    return result.replaceFirst(options.cutFromModelNames, '');
+    return result.replaceAll(options.cutFromModelNames, '');
   }
 
   String generateEnumName(String className, String enumName) {
