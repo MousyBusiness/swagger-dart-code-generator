@@ -1,5 +1,6 @@
 import 'package:recase/recase.dart';
 import 'package:swagger_dart_code_generator/src/code_generators/constants.dart';
+import 'package:swagger_dart_code_generator/src/code_generators/swagger_generator_base.dart';
 import 'package:swagger_dart_code_generator/src/code_generators/swagger_models_generator.dart';
 
 extension CapitalizeExtension on String {
@@ -25,7 +26,8 @@ extension TypeExtension on String {
     return '$this?';
   }
 
-  String getRef() => split('/').last.pascalCase;
+  String getRef(SwaggerGeneratorBase gen) =>
+      gen.getValidatedClassName(split('/').last.pascalCase);
 
   String getUnformattedRef() => split('/').last;
 

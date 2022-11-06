@@ -44,7 +44,7 @@ abstract class SwaggerModelsGenerator extends SwaggerGeneratorBase {
     {
       return '';
     }
-    
+
     if (schema.isEnum) {
       return '';
     }
@@ -588,7 +588,7 @@ static $returnType $fromJsonFunction($valueType? value) => $enumNameCamelCase$fr
     if (allOf.length != 1) {
       typeName = kDynamic;
     } else {
-      var className = allOf.first.ref.getRef();
+      var className = allOf.first.ref.getRef(this);
 
       final enumClassName = 'enums.$className';
       if (allEnumNames.contains(enumClassName)) {
@@ -1021,7 +1021,7 @@ static $returnType $fromJsonFunction($valueType? value) => $enumNameCamelCase$fr
 
       final propertyKey = propertyName;
 
-      final basicTypesMap = generateBasicTypesMapFromSchemas(root);
+      final basicTypesMap = generateBasicTypesMapFromSchemas(this, root);
 
       propertyName = propertyName.asParameterName();
 
@@ -1092,7 +1092,7 @@ static $returnType $fromJsonFunction($valueType? value) => $enumNameCamelCase$fr
   }
 
   static Map<String, String> generateBasicTypesMapFromSchemas(
-      SwaggerRoot root) {
+      SwaggerGeneratorBase gen, SwaggerRoot root) {
     final result = <String, String>{};
 
     final components = root.components;
@@ -1120,7 +1120,7 @@ static $returnType $fromJsonFunction($valueType? value) => $enumNameCamelCase$fr
         if (result[ref.getUnformattedRef()] != null) {
           result[key] = result[ref.getUnformattedRef()]!.asList();
         } else if (ref.isNotEmpty) {
-          result[key] = ref.getRef().asList();
+          result[key] = ref.getRef(gen).asList();
         }
       }
     });

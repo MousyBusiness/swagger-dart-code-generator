@@ -233,7 +233,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
           continue;
         }
 
-        results.add(ref.getRef());
+        results.add(ref.getRef(this));
       }
     }
 
@@ -543,33 +543,34 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
           .asList();
     } else if (parameter.items?.hasRef == true) {
       if (_isEnumRefParameter(parameter, root)) {
-        return parameter.items!.ref.getRef().asEnum();
+        return parameter.items!.ref.getRef(this).asEnum();
       }
       return _mapParameterName(
-              parameter.items!.ref.getRef(), format, modelPostfix)
+              parameter.items!.ref.getRef(this), format, modelPostfix)
           .asList();
     } else if (parameter.schema?.items?.hasRef == true) {
       if (_isEnumRefParameter(parameter, root)) {
         return parameter.schema!.items!.ref
-            .getRef()
+            .getRef(this)
             .asEnum()
             .asList()
             .makeNullable();
       }
-      return (parameter.schema!.items!.ref.getRef() + modelPostfix).asList();
+      return (parameter.schema!.items!.ref.getRef(this) + modelPostfix)
+          .asList();
     } else if (parameter.schema?.hasRef == true) {
       if (_isEnumRefParameter(parameter, root)) {
-        return parameter.schema!.ref.getRef().asEnum();
+        return parameter.schema!.ref.getRef(this).asEnum();
       }
 
       if (_isEnumRef(parameter.schema!.ref.getUnformattedRef(), root)) {
-        return parameter.schema!.ref.getRef().asEnum();
+        return parameter.schema!.ref.getRef(this).asEnum();
       }
 
       if (parameter.schema!.items != null || parameter.schema!.type == kArray) {
-        return (parameter.schema!.ref.getRef() + modelPostfix).asList();
+        return (parameter.schema!.ref.getRef(this) + modelPostfix).asList();
       }
-      return (parameter.schema!.ref.getRef() + modelPostfix);
+      return (parameter.schema!.ref.getRef(this) + modelPostfix);
     } else if (parameter.schema?.type == kArray &&
         parameter.schema?.items?.type.isNotEmpty == true) {
       return _mapParameterName(parameter.schema!.items!.type, format, '')
@@ -585,7 +586,6 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
     if (parameter.schema?.type.isNotEmpty == true) {
       return _mapParameterName(parameter.schema!.type, format, modelPostfix);
     }
-
     return kObject.pascalCase;
   }
 
@@ -645,16 +645,24 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
               ..required = swaggerParameter.isRequired &&
                   _getHeaderDefaultValue(swaggerParameter) == null &&
                   swaggerParameter.inParameter != kHeader
-              ..type = Reference(
-                _getParameterTypeName(
+              ..type = Reference(() {
+                final v = _getParameterTypeName(
                   parameter: swaggerParameter,
                   path: path,
                   requestType: requestType,
                   definedParameters: definedParameters,
                   modelPostfix: modelPostfix,
                   root: root,
-                ).makeNullable(),
-              )
+                ).makeNullable();
+
+                if (v.startsWith(
+                    "CoachWellyApplicationBusinessRulesV1MobileUserContextGetPointsStatisticByDatePeriodsContextGetPointsStatisticByDatePeriodsQuery")) {
+                  print("MEOW $v");
+                  throw Exception("MEOW");
+                }
+
+                return v;
+              }())
               ..named = true
               ..annotations.add(
                 _getParameterAnnotation(swaggerParameter),
@@ -719,13 +727,13 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
 
       if (requestBody.hasRef) {
         final ref = requestBody.ref;
-        typeName = ref.getRef();
+        typeName = ref.getRef(this);
 
         final requestBodyRef =
-            root.components?.requestBodies[ref.getRef()]?.ref ?? '';
+            root.components?.requestBodies[ref.getRef(this)]?.ref ?? '';
 
         if (requestBodyRef.isNotEmpty) {
-          typeName = requestBodyRef.getRef();
+          typeName = requestBodyRef.getRef(this);
         }
 
         typeName = getValidatedClassName(typeName);
@@ -784,8 +792,8 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
     final schemas = root.components?.schemas ?? <String, SwaggerSchema>{};
     schemas.addAll(root.definitions);
 
-    final neededSchemaKey =
-        schemas.keys.firstWhereOrNull((key) => key.getRef() == ref.getRef());
+    final neededSchemaKey = schemas.keys
+        .firstWhereOrNull((key) => key.getRef(this) == ref.getRef(this));
 
     if (neededSchemaKey == null) {
       return false;
@@ -809,7 +817,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
   }) {
     if (schema.type.isNotEmpty) {
       if (schema.type == kArray) {
-        final ref = schema.items?.ref.getRef() ?? '';
+        final ref = schema.items?.ref.getRef(this) ?? '';
 
         if (_isEnumRef(ref, root)) {
           return ref.asEnum().asList();
@@ -837,7 +845,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
 
     if (schema.hasRef) {
       if (_isEnumRef(schema.ref, root)) {
-        return schema.ref.getRef().asEnum();
+        return schema.ref.getRef(this).asEnum();
       }
 
       if (_isBasicTypeRef(schema.ref, root)) {
@@ -845,7 +853,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
       }
 
       return getValidatedClassName(
-          schema.ref.getRef().withPostfix(modelPostfix));
+          schema.ref.getRef(this).withPostfix(modelPostfix));
     }
 
     return '';
@@ -907,7 +915,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
     if (responseType == kArray) {
       final itemsOriginalRef = swaggerResponse.schema?.items?.originalRef;
       final itemsType = swaggerResponse.schema?.items?.type;
-      final itemsRef = swaggerResponse.schema?.items?.ref.getRef();
+      final itemsRef = swaggerResponse.schema?.items?.ref.getRef(this);
 
       final arrayType = [itemsRef, itemsOriginalRef, itemsType, kObject]
           .firstWhere((element) => element?.isNotEmpty == true)!;
@@ -929,7 +937,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
     final listRef = swaggerResponse.schema?.items?.ref ?? '';
 
     if (listRef.isNotEmpty) {
-      return (listRef.getRef() + modelPostfix).asList();
+      return (listRef.getRef(this) + modelPostfix).asList();
     }
 
     final ref = swaggerResponse.schema?.ref ?? swaggerResponse.ref;
@@ -954,7 +962,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
         return kObject.pascalCase;
       }
 
-      return getValidatedClassName(ref.getRef() + modelPostfix);
+      return getValidatedClassName(ref.getRef(this) + modelPostfix);
     }
 
     return null;
@@ -992,7 +1000,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
 
     if (content.hasRef) {
       final ref = content.ref;
-      final type = ref.getRef().withPostfix(modelPostfix);
+      final type = ref.getRef(this).withPostfix(modelPostfix);
       return kBasicTypesMap[type] ?? type;
     }
 
@@ -1009,8 +1017,8 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
         return kObject.pascalCase;
       }
 
-      final typeName =
-          getValidatedClassName(schemaRef.getRef()).withPostfix(modelPostfix);
+      final typeName = getValidatedClassName(schemaRef.getRef(this))
+          .withPostfix(modelPostfix);
 
       return typeName;
     }
@@ -1034,7 +1042,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
 
     final schemaItemsRef = content.schema?.items?.ref ?? '';
     if (schemaItemsRef.isNotEmpty) {
-      final result = getValidatedClassName(schemaItemsRef.getRef())
+      final result = getValidatedClassName(schemaItemsRef.getRef(this))
           .withPostfix(modelPostfix)
           .asList();
 
@@ -1046,7 +1054,7 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
       final itemsFormat = content.schema?.items?.format ?? '';
 
       if (itemsType == kArray && content.schema?.items?.items?.ref != null) {
-        final itemsItemsType = content.schema?.items?.items?.ref.getRef() ??
+        final itemsItemsType = content.schema?.items?.items?.ref.getRef(this) ??
             content.schema?.items?.items?.type ??
             kObject;
 
