@@ -655,12 +655,6 @@ class SwaggerRequestsGenerator extends SwaggerGeneratorBase {
                   root: root,
                 ).makeNullable();
 
-                if (v.startsWith(
-                    "CoachWellyApplicationBusinessRulesV1MobileUserContextGetPointsStatisticByDatePeriodsContextGetPointsStatisticByDatePeriodsQuery")) {
-                  print("MEOW $v");
-                  throw Exception("MEOW");
-                }
-
                 return v;
               }())
               ..named = true
